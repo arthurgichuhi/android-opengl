@@ -1,4 +1,4 @@
-package com.arthurgichuhi.aopengl
+package com.arthurgichuhi.aopengl.objects
 
 data class MyShaders(
     var vS:StringBuffer,

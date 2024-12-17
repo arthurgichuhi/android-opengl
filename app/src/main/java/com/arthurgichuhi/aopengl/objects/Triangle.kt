@@ -2,6 +2,7 @@ package com.arthurgichuhi.aopengl.objects
 
 import android.content.Context
 import android.opengl.GLES20
+import android.util.Log
 import com.arthurgichuhi.aopengl.R
 import java.io.BufferedReader
 import java.io.InputStream
@@ -42,9 +43,8 @@ class Triangle(context: Context) {
                 position(0)
             }
         }
-
-        val vs:Int=loadShader(GLES20.GL_VERTEX_SHADER,vertexShaderCode)
-        val fs:Int=loadShader(GLES20.GL_FRAGMENT_SHADER,fragmentShaderCode)
+        val vs:Int=loadShader(GLES20.GL_VERTEX_SHADER,getShaderCode("vs",context))
+        val fs:Int=loadShader(GLES20.GL_FRAGMENT_SHADER,getShaderCode("fs",context))
         program=GLES20.glCreateProgram().also {
             GLES20.glAttachShader(it,vs)
             GLES20.glAttachShader(it,fs)
@@ -68,28 +68,37 @@ class Triangle(context: Context) {
     private val vertexStride: Int = COORDS_PER_VERTEX * 4
 
     private fun getShaderCode(type:String, context:Context):String{
-        val myBuffer=StringBuffer()
+        val stringBuilder=StringBuilder()
         var inputStream:InputStream?=null
-        var read:String?=null
         if(type=="vs"){
-            inputStream=context.resources.openRawResource(R.raw.vs)
-            val `in` = BufferedReader(InputStreamReader(inputStream))
-            read=`in`.readLine()
-            while (read!=null){
-                myBuffer.append(read)
+            try{
+                inputStream=context.resources.openRawResource(R.raw.vs)
+                val reader = BufferedReader(InputStreamReader(inputStream))
+                var line:String?
+                while (reader.readLine().also { line = it } != null) {
+                    stringBuilder.append(line).append("\n")
+                }
+                if (stringBuilder.isNotEmpty()) {
+                    stringBuilder.deleteCharAt(stringBuilder.length - 1)
+                }
+
             }
-            myBuffer.deleteCharAt(myBuffer.length - 1)
-            return myBuffer.toString()
+            catch (e:Error){
+                Log.d("A-OPENGL","Error reading shader file \n$e")
+            }
+            return stringBuilder.toString()
         }
         else{
             inputStream=context.resources.openRawResource(R.raw.fs)
-            val `in` = BufferedReader(InputStreamReader(inputStream))
-            read=`in`.readLine()
-            while (read!=null){
-                myBuffer.append(read + "\n")
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            var line:String?
+            while (reader.readLine().also { line = it } != null) {
+                stringBuilder.append(line).append("\n")
             }
-            myBuffer.deleteCharAt(myBuffer.length - 1)
-            return myBuffer.toString()
+            if (stringBuilder.isNotEmpty()) {
+                stringBuilder.deleteCharAt(stringBuilder.length - 1)
+            }
+            return stringBuilder.toString()
         }
     }
 
